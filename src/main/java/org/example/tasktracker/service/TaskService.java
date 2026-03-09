@@ -1,6 +1,7 @@
 package org.example.tasktracker.service;
 
 import org.example.tasktracker.dto.CreateTaskRequest;
+import org.example.tasktracker.dto.TaskSummaryResponse;
 import org.example.tasktracker.model.Task;
 import org.example.tasktracker.model.TaskStatus;
 import org.springframework.stereotype.Service;
@@ -42,5 +43,23 @@ public class TaskService {
         }
         task.setStatus(status);
         return task;
+    }
+
+    public TaskSummaryResponse getSummary() {
+        int todo = 0;
+        int inProgress = 0;
+        int done = 0;
+
+        for (Task task : tasks.values()) {
+            if (task.getStatus() == TaskStatus.TODO) {
+                todo++;
+            } else if (task.getStatus() == TaskStatus.IN_PROGRESS) {
+                inProgress++;
+            } else if (task.getStatus() == TaskStatus.DONE) {
+                done++;
+            }
+        }
+
+        return new TaskSummaryResponse(tasks.size(), todo, inProgress, done);
     }
 }
