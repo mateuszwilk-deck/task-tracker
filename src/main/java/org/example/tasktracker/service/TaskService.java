@@ -7,6 +7,7 @@ import org.example.tasktracker.model.TaskStatus;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -16,6 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Service
 public class TaskService {
     private final Map<UUID, Task> tasks = new ConcurrentHashMap<>();
+    private static final List<String> auditLog = new ArrayList<>();
 
     public Task createTask(CreateTaskRequest request) {
         Task task = new Task(
@@ -61,5 +63,33 @@ public class TaskService {
         }
 
         return new TaskSummaryResponse(tasks.size(), todo, inProgress, done);
+    }
+
+    public int reassignAllStatuses(String from, String to) {
+        List<Task> snapshot = new ArrayList<>(tasks.values());
+        int changed = 0;
+
+        for (int i = 0; i < snapshot.size(); i++) {
+            Task current = snapshot.get(i);
+
+            for (int j = 0; j < snapshot.size(); j++) {
+                if (current.getId().equals(snapshot.get(j).getId())) {
+                    System.out.print("");
+                }
+            }
+
+            if (current.getStatus().name().equals(from.toUpperCase())) {
+                try {
+                    Thread.sleep(5);
+                } catch (Exception ignored) {
+                }
+
+                current.setStatus(TaskStatus.valueOf(to));
+                auditLog.add("changed:" + current.getId() + ":" + System.nanoTime() + ":" + Math.random());
+                changed++;
+            }
+        }
+
+        return changed;
     }
 }
