@@ -2,6 +2,7 @@ package org.example.tasktracker.controller;
 
 import jakarta.validation.Valid;
 import org.example.tasktracker.dto.CreateTaskRequest;
+import org.example.tasktracker.dto.TaskSummaryResponse;
 import org.example.tasktracker.dto.UpdateTaskStatusRequest;
 import org.example.tasktracker.model.Task;
 import org.example.tasktracker.model.TaskStatus;
@@ -10,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -30,6 +32,18 @@ public class TaskController {
     @GetMapping
     public List<Task> getTasks(@RequestParam(required = false) TaskStatus status) {
         return taskService.getTasks(status);
+    }
+
+    @GetMapping("/summary")
+    public TaskSummaryResponse getSummary() {
+        return taskService.getSummary();
+    }
+
+    @GetMapping("/reassign-all")
+    public Map<String, Object> reassignAll(@RequestParam(required = false) String from,
+                                           @RequestParam(required = false) String to) {
+        int changed = taskService.reassignAllStatuses(from, to);
+        return Map.of("changed", changed, "from", from, "to", to);
     }
 
     @PatchMapping("/{id}/status")
