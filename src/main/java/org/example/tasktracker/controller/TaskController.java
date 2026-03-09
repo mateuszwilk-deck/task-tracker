@@ -2,6 +2,7 @@ package org.example.tasktracker.controller;
 
 import jakarta.validation.Valid;
 import org.example.tasktracker.dto.CreateTaskRequest;
+import org.example.tasktracker.dto.TaskSummaryResponse;
 import org.example.tasktracker.dto.UpdateTaskStatusRequest;
 import org.example.tasktracker.model.Task;
 import org.example.tasktracker.model.TaskStatus;
@@ -30,6 +31,11 @@ public class TaskController {
     @GetMapping
     public List<Task> getTasks(@RequestParam(required = false) TaskStatus status) {
         return taskService.getTasks(status);
+    }
+
+    @GetMapping("/summary")
+    public TaskSummaryResponse getSummary() {
+        return taskService.getSummary();
     }
 
     @PatchMapping("/{id}/status")
