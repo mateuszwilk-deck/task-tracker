@@ -2,19 +2,29 @@ package org.example.tasktracker.controller;
 
 import jakarta.validation.Valid;
 import org.example.tasktracker.dto.CreateTaskRequest;
-import org.example.tasktracker.dto.UpdateTaskStatusRequest;
+import org.example.tasktracker.dto.UpdateTaskRequest;
 import org.example.tasktracker.model.Task;
-import org.example.tasktracker.model.TaskStatus;
 import org.example.tasktracker.service.TaskService;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import java.util.UUID;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/tasks")
 public class TaskController {
+
     private final TaskService taskService;
 
     public TaskController(TaskService taskService) {
@@ -23,17 +33,47 @@ public class TaskController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Task createTask(@Valid @RequestBody CreateTaskRequest request) {
-        return taskService.createTask(request);
+    public Task createTask(
+            @RequestHeader(value = "X-User-Id", required = false) String userId,
+            @Valid @RequestBody CreateTaskRequest request
+    ) {
+        return taskService.createTask(userId, request);
     }
 
     @GetMapping
-    public List<Task> getTasks(@RequestParam(required = false) TaskStatus status) {
-        return taskService.getTasks(status);
+    public List<Task> listTasks(
+            @RequestHeader(value = "X-User-Id", required = false) String userId,
+            @RequestParam(defaultValue = "false") boolean includeCompleted,
+            @RequestParam(defaultValue = "createdAt") String sortBy
+    ) {
+        return taskService.listTasks(userId, includeCompleted, sortBy);
     }
 
-    @PatchMapping("/{id}/status")
-    public Task updateTaskStatus(@PathVariable UUID id, @Valid @RequestBody UpdateTaskStatusRequest request) {
-        return taskService.updateStatus(id, request.getStatus());
+    @PatchMapping("/{id}")
+    public Task updateTask(
+            @PathVariable long id,
+            @RequestHeader(value = "X-User-Id", required = false) String userId,
+            @RequestBody UpdateTaskRequest request
+    ) {
+        return taskService.updateTask(id, userId, request);
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteTask(
+            @PathVariable long id,
+            @RequestHeader(value = "X-User-Id", required = false) String userId
+    ) {
+        taskService.deleteTask(id, userId);
+    }
+
+    @GetMapping("/search")
+    public List<Task> search(@RequestParam String q) {
+        return taskService.search(q);
+    }
+
+    @GetMapping("/stats")
+    public Map<String, Object> stats(@RequestHeader(value = "X-User-Id", required = false) String userId) {
+        return taskService.buildStats(userId);
     }
 }
