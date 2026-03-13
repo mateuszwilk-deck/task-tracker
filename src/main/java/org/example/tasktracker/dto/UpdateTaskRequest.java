@@ -1,14 +1,14 @@
 package org.example.tasktracker.dto;
 
-import jakarta.validation.constraints.NotBlank;
-
 import java.util.List;
 
-public record CreateTaskRequest(
-        @NotBlank String title,
+public record UpdateTaskRequest(
+        String title,
         String description,
+        Boolean completed,
         Integer priority,
         Integer estimateHours,
-        List<String> tags
+        List<String> tags,
+        String overrideOwnerId
 ) {
 }
